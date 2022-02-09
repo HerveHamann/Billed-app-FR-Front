@@ -3,15 +3,16 @@
  */
 
 import { screen, waitFor } from "@testing-library/dom";
+import userEvent from "@testing-library/user-event";
 import BillsUI from "../views/BillsUI.js";
-import { bills } from "../fixtures/bills.js";
+import Bills from "../containers/Bills.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
-
+import mockStore from "../__mocks__/store";
+import { bills } from "../fixtures/bills.js";
 import router from "../app/Router.js";
 
-import userEvent from "@testing-library/user-event";
-import Bills from "../containers/Bills.js";
+jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on Bills Page", () => {
@@ -43,6 +44,7 @@ describe("Given I am connected as an employee", () => {
       expect(dates).toEqual(datesSorted);
     });
   });
+
   describe("when I click on the new bill button", () => {
     test("it should display the new bill page", () => {
       const onNavigate = (pathname) => {
@@ -56,14 +58,15 @@ describe("Given I am connected as an employee", () => {
           type: "Employee",
         })
       );
+      document.body.innerHTML = BillsUI({ data: { bills } });
 
       const billBoard = new Bills({
         document,
         onNavigate,
         store: null,
+
         localStorage: window.localStorage,
       });
-      document.body.innerHTML = BillsUI({ data: { bills } });
 
       const handleClickNewBillMoked = jest.fn((e) => billBoard.handleClickNewBill());
       const newBillButton = screen.getByTestId("btn-new-bill");
@@ -71,8 +74,47 @@ describe("Given I am connected as an employee", () => {
       newBillButton.addEventListener("click", handleClickNewBillMoked);
 
       userEvent.click(newBillButton);
+
       expect(handleClickNewBillMoked).toHaveBeenCalled();
       expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
+    });
+  });
+
+  describe("when I click on the eye button", () => {
+    test("it should display the justificate modal", () => {
+      Object.defineProperty(window, "localStorage", { value: localStorageMock });
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({
+          type: "Employee",
+        })
+      );
+      $.fn.modal = jest.fn();
+
+      document.body.innerHTML = BillsUI({ data: [bills[0]] });
+
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+
+      const store = null;
+
+      const billBoard = new Bills({
+        document,
+        onNavigate,
+        store,
+        localStorage: window.localStorage,
+      });
+
+      const eyeButton = screen.getByTestId("icon-eye");
+      const handleClickIconEyeMoked = jest.fn(billBoard.handleClickIconEye);
+
+      eyeButton.addEventListener("click", () => handleClickIconEyeMoked(eyeButton));
+
+      userEvent.click(eyeButton);
+      expect(handleClickIconEyeMoked).toHaveBeenCalled();
+      const modale = document.getElementById("modaleFile");
+      expect(modale).toBeTruthy();
     });
   });
 });
