@@ -20,6 +20,10 @@ export default class NewBill {
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0];
     const filePath = e.target.value.split(/\\/g);
     const fileName = filePath[filePath.length - 1];
+
+    const fileAcceptedRegex = new RegExp("^.*.(png|jpe?g|pdf)$", "i");
+    if (!fileAcceptedRegex.test(file.name)) return false;
+
     const formData = new FormData();
     const email = JSON.parse(localStorage.getItem("user")).email;
     formData.append("file", file);
@@ -66,6 +70,7 @@ export default class NewBill {
   };
 
   // not need to cover this function by tests
+  /* istanbul ignore next */
   updateBill = (bill) => {
     if (this.store) {
       this.store

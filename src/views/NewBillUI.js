@@ -1,5 +1,5 @@
 import VerticalLayout from "./VerticalLayout.js";
-//Add accept attribute to choose only: .png, .jpg, .jpeg
+
 export default () => {
   return `
     <div class='layout'>
@@ -54,7 +54,7 @@ export default () => {
                   </div>
                   <div class="col-half">
                     <label for="file" class="bold-label">Justificatif</label>
-                    <input required accept=".png, .jpg, .jpeg" type="file" class="form-control blue-border" data-testid="file" />
+                    <input required  type="file" class="form-control blue-border" data-testid="file" />
                   </div>
                 </div>
             </div>
